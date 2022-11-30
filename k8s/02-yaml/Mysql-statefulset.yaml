@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+spec:
+  replicas: 1
+  serviceName: mysql-svc
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      #terminationGracePeriodSeconds: 10
+      containers:
+        - name: mysql
+          image: hifrodo/m-dev:mysql5.7_v1
+          args:
+            - "--ignore-db-dir=lost+found"          
+          ports:
+            - name: tpc
+              protocol: TCP
+              containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom: 
+               secretKeyRef: 
+                key: rootpass
+                name: mysql-pass
+            - name: MYSQL_DATABASE
+              valueFrom: 
+               configMapKeyRef: 
+                key: mysqldb
+                name: mysql-cm
+            - name: MYSQL_USER
+              valueFrom: 
+               secretKeyRef: 
+                key: username
+                name: mysql-pass
+            - name: MYSQL_PASSWORD
+              valueFrom: 
+               secretKeyRef: 
+                key: userpass
+                name: mysql-pass
+            - name: MYSQL_ROOT_HOST
+              value: '%'                               
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates: 
+    - metadata:
+        name: data
+      spec:
+        #storageClassName: standard
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

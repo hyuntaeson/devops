@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    volumeMounts:
+    - mountPath: /var/log/nginx
+      name: log
+  volumes:
+  - name: log
+    hostPath:
+      # directory location on host
+      path: /home/sht3544/log
+      # this field is optional
+      type: Directory
